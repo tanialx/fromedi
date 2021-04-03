@@ -30,17 +30,14 @@ class Defs:
         # and is represented as:
         # SE: ['# Segments', 'Transaction Control Number']
 
-        'ISA': ['Authorization Information Qualifier', 'Authorization Information',
-                'Security Information Qualifier', 'Security Information',
-                'Interchange ID Sender Qualifier', 'Interchange Sender ID',
-                'Interchange ID Receiver Qualifier', 'Interchange Receiver ID',
-                'Date', 'Time', 'Repetition Separator',
-                'Interchange Control Version Number', 'Interchange Control Number',
+        'ISA': ['Authorization Qualifier', 'Authorization', 'Security Qualifier', 'Security', 
+                'Sender Qualifier', 'Sender ID', 'Receiver Qualifier', 'Receiver ID',
+                'Date', 'Time', 'Repetition Separator', 'Control Version Number', 'Control Number',
                 'Acknowledgment Requested', 'Usage Indicator'],
         'GS': ['Functional ID Code', 'Sender\'s ID Code', 'Receiver\'s ID Code',
-               'Date', 'Time', 'Group Control Number', 'Responsible Agency Code',
+               'Date', 'Time', 'Control Number', 'Responsible Agency Code',
                'Version/Release/Identifier Code'],
-        'ST': ['Transaction Set Identifier Code', 'Transaction Set Control Number'],
+        'ST': ['Identifier Code', 'Control Number'],
         'BIG': ['Invoice Date', 'Invoice Number', 'Order Date', 'Purchase Order Number', 'Release Number', 'Transaction Type'],
         'SE': ['# Segments', 'Transaction Control Number'],
         'GE': ['# Transaction Sets', 'Group Control Number'],
