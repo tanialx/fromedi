@@ -49,29 +49,30 @@ class Defs:
         # Layout of EDI envenlope
         # - segtype: for handling special segments such as envelope level or Loop
         # - subsegs: child segments
+        # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
         'ISA': {
             'segtype': SegmentType.REGULAR,
             'subsegs': {
                 'GS': {
-                    'segtype': SegmentType.REGULAR,
+                    'segtype': SegmentType.LOOP,
                     'subsegs': {
                         'ST': {
-                            'segtype': SegmentType.REGULAR,
+                            'segtype': SegmentType.LOOP,
                             'subsegs': {
                                 # TODO: more segment defs
                                 'SE': {
-                                    'segtype': SegmentType.CLOSING # End of ST segment
+                                    'segtype': SegmentType.CLOSING  # End of ST segment
                                 }
                             }
                         },
                         'GE': {
-                            'segtype': SegmentType.CLOSING # End of GS segment
+                            'segtype': SegmentType.CLOSING  # End of GS segment
                         }
                     }
                 },
                 'IEA': {
-                    'segtype': SegmentType.CLOSING # End of ISA segment
+                    'segtype': SegmentType.CLOSING  # End of ISA segment
                 }
             }
         }

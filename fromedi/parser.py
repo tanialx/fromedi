@@ -3,10 +3,10 @@ from fromedi.defs import Token, SegmentType, Defs
 
 class Parser:
     def __init__(self):
-        self._out = {} # Final result after parsing
+        self._out = {}  # Final result after parsing
 
         # Keep track of the outer rules when we process child elements that
-        # contains nested rules.We will need to comeback to previous rule later on
+        # contains nested rules. We will need to comeback to previous rule later on
         # to finialize the info
         #
         # Example:
@@ -19,6 +19,39 @@ class Parser:
         # --> [ISA, GS, ST] and continue with remaining elements of ST rule)
 
         self.rule_stack = [{'subsegs': Defs.rule}]
+
+        # Stack contains _out's parent keys
+        #
+        # While rule_stack is used to keep track of the rules defined in Defs
+        # _out_pointer_stack keeps track of the output so that we append key-value to the correct
+        # nested element in _out
+        #
+        # Ex:
+        # For rule_stack [ISA, GS, ST] we would have
+        # _out_pointer_stack ['groups', 'transactions']
+        # _out = {
+        #   <various interchange segment data>,
+        #   'groups': [{
+        #       <various groups segment data>,
+        #       'transactions': [
+        #           { <transaction> }, { <transaction> }
+        #       ]
+        #   }]
+        # }
+        # outPointer() --> _out['groups']['transactions']
+
+        # When all ST(s) is completely processed and popped out of rule_stack,
+        # 'transactions' will also be removed from _out_pointer_stack
+        # so that we can continue append key-value to 'groups' of _out
+        # as we continue processing rule GS of rule_stack
+
+        self._out_pointer_stack = []
+
+    def outPointer(self):
+        _out_pointer = self._out
+        for step in self._out_pointer_stack:
+            _out_pointer = _out_pointer[step]
+        return _out_pointer
 
     def currentRule(self):
         return self.rule_stack[len(self.rule_stack) - 1]
@@ -38,22 +71,35 @@ class Parser:
     # Each EDI segment is converted to list previously in 'fromFile' func
     # Ex: BIG*20101204*217224*20101204*P792940
     # --> [BIG, 20101204, 217224, 20101204, P792940] (elementArr)
-    def parseElement(self, elementArr):
+    def parseElement(self, element_arr):
 
         # Retrieve segment name as first element in list
-        seg_name = elementArr[0].upper()
+        seg_name = element_arr[0].upper()
 
         # Retrieve current rule's child elements from stack
-        current_rule = self.currentRule()['subsegs']
+        current_rule_subsegs = self.currentRule()['subsegs']
 
         # Case 1: seg_name is defined in rule, that means end-of-rule is not encountered yet
         # Continue parsing using current_rule
-        if (seg_name in current_rule):
-            seg_rule = current_rule[seg_name]
+        if (seg_name in current_rule_subsegs):
+            seg_rule = current_rule_subsegs[seg_name]
 
             # Case 1.1: Regular segment
-            if (seg_rule['segtype'] == SegmentType.REGULAR):
-                self.parse_regular_segment(seg_name)
+            if (seg_rule['segtype'] in [SegmentType.REGULAR, SegmentType.LOOP]):
+                _parsed_seg = self.parse_regular_segment(seg_name, element_arr)
+                _out_pointer = self.outPointer()
+
+                # Segment of type Loop should be handled as List within the parent segment
+                if (seg_rule['segtype'] == SegmentType.LOOP):
+                    # Create a new list with one empty element in _out and update pointers
+                    # TODO: Handle subsequent elements in list
+                    _out_pointer[seg_name + 's'] = [{}]
+                    _out_pointer = _out_pointer[seg_name + 's'][0]
+                    self._out_pointer_stack.append(seg_name + 's')
+                    self._out_pointer_stack.append(0)
+
+                _out_pointer.update(_parsed_seg)
+
                 if ('subsegs' in seg_rule):
                     # This means this segment contains child elements of itself
                     # The next element(s) should be parsed using the its nested rule
@@ -64,7 +110,6 @@ class Parser:
             # Remove current_rule from stack so that we can continue parsing its parent rule
             elif (seg_rule['segtype'] == SegmentType.CLOSING):
                 self.rule_stack.pop()
-
             return True
 
         # Case 2: seg_name is defined in rule
@@ -75,6 +120,16 @@ class Parser:
             # TODO: case 2 implementation
             return True
 
-    def parse_regular_segment(self, segment_name):
-        # TODO: Implementation
-        pass
+    def parse_regular_segment(self, segment_name, element_arr):
+        # Mapping elements of input segment and Defs.segmentDef
+        # one-by-one to retrieve the names of the EDI segment element values
+        counter = 1
+        element_arr_len = len(element_arr)
+        _seg_out = {}
+        template = Defs.segmentDef[segment_name]
+        for template_element in template:
+            _seg_out[template_element] = element_arr[counter]
+            counter = counter + 1
+            if (element_arr_len <= counter):
+                break
+        return _seg_out
