@@ -37,6 +37,9 @@ def test_Parser():
     assert(tranx0['invoice_number'] == '217224')
     assert(tranx0['order_date'] == '20101204')
     assert(tranx0['order_number'] == 'P792940')
+    # Reference ID    
+    assert(tranx0['DP'] == '099')
+    assert(tranx0['IA'] == '99999')
     # Name(s)
     name0 = tranx0['names'][0]
     assert(name0['entity_id_code'] == 'ST')

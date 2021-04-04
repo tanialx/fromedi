@@ -120,6 +120,14 @@ class Parser:
             # Remove current_rule from stack so that we can continue parsing its parent rule
             elif (segtype == SegmentType.CLOSING):
                 self.rule_stack.pop()
+
+            # Case 1.3:
+            # Segment elements in (key, value(s)) format
+            # Example segments of this case are REF, DTM
+            elif  (segtype == SegmentType.KV_PAIR):
+                _parsed_seg = self.parse_key_value_pair_segment(element_arr, seg_rule['key_idx'])
+                self.outPointer().update(_parsed_seg)
+
             return True
 
         # Case 2: seg_name is not defined in rule
@@ -150,6 +158,19 @@ class Parser:
             # TODO: Handle error
             return {}
 
+    def parse_key_value_pair_segment(self, element_arr, key_idx):
+        if len(element_arr) > key_idx:
+            key = element_arr[key_idx]
+             # Remove segment name and the key from element_arr
+             # the one(s) left are the value(s)
+             # Currently assume that this segment type is always of length 3 segment_name*key*value
+            element_arr.remove(key)
+            element_arr.remove(element_arr[0])
+            value = element_arr[0]
+            return {
+                key: value
+            }
+        else:
+            # TODO: Handle error
+            return {}
 
-parser = Parser()
-interchange = parser.fromFile('./tests/data/x12_810_0.edi')

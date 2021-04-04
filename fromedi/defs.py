@@ -13,10 +13,14 @@ class SegmentType(Enum):
     # LOOP:     Repeated segments that may included child segments
     # CLOSING:  Signal end of current segment (no more child),
     #           ex: SE signals end of transaction data (which starts with ST)
+    # KV_PAIR:  Segment contains two elements, but one is the value of the other
+    #           ex: REF*BM*00000000 should be translate directly as 'bill_of_lading': '00000000'
+    #               instead of {'ref_id_qualifier': 'BM, 'ref_id': '00000000'}
 
     REGULAR = 1
     LOOP = 2
     CLOSING = 3
+    KV_PAIR = 4
 
 
 class Defs:
@@ -56,7 +60,10 @@ class Defs:
         '810': {
             'subsegs': {
                 'BIG': {},
-                'REF': {},
+                'REF': {
+                    'segtype': SegmentType.KV_PAIR,
+                    'key_idx': 1
+                },
                 'N1': {
                     'segtype': SegmentType.LOOP,
                     'subsegs': {
