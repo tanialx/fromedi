@@ -19,7 +19,7 @@ def test_Parser():
     assert(interchange['acknowledgment_requested'] == '0')
     assert(interchange['usage_indicator'] == 'P')
 
-    group0 = interchange['GSs'][0]    
+    group0 = interchange['groups'][0]    
     assert(group0['functional_id_code'] == 'IN')
     assert(group0['sender_id_code'] == '4405197800')
     assert(group0['receiver_id_code'] == '999999999')
@@ -29,11 +29,17 @@ def test_Parser():
     assert(group0['responsible_agency_code'] == 'X')
     assert(group0['version/release/identifier_code'] == '004010VICS')
 
-    tranx0 = group0['STs'][0]
+    tranx0 = group0['transactions'][0]
     assert(tranx0['identifier_code'] == '810')
     assert(tranx0['control_number'] == '1004')
+    # Beginning segment:
     assert(tranx0['invoice_date'] == '20101204')
     assert(tranx0['invoice_number'] == '217224')
     assert(tranx0['order_date'] == '20101204')
     assert(tranx0['order_number'] == 'P792940')
-
+    # Name(s)
+    name0 = tranx0['names'][0]
+    assert(name0['entity_id_code'] == 'ST')
+    assert(name0['name'] == '')
+    assert(name0['id_code_qualifier'] == '92')
+    assert(name0['id_code'] == '123')

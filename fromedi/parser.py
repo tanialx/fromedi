@@ -94,10 +94,13 @@ class Parser:
                 # Segment of type Loop should be handled as List within the parent segment
                 if (segtype == SegmentType.LOOP):
                     # Create a new list with one empty element in _out and update pointers
+                    # Look up loop name from Defs to wrap around the list
+                    loop_name = Defs.loopName[seg_name]
+
                     # TODO: Handle subsequent elements in list
-                    _out_pointer[seg_name + 's'] = [{}]
-                    _out_pointer = _out_pointer[seg_name + 's'][0]
-                    self._out_pointer_stack.append(seg_name + 's')
+                    _out_pointer[loop_name] = [{}]
+                    _out_pointer = _out_pointer[loop_name][0]
+                    self._out_pointer_stack.append(loop_name)
                     self._out_pointer_stack.append(0)
 
                 _out_pointer.update(_parsed_seg)
@@ -146,3 +149,7 @@ class Parser:
             # Should specify an error and terminate parser
             # TODO: Handle error
             return {}
+
+
+parser = Parser()
+interchange = parser.fromFile('./tests/data/x12_810_0.edi')
