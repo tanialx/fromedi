@@ -77,12 +77,12 @@ class Parser:
         seg_name = element_arr[0].upper()
 
         # Retrieve current rule's child elements from stack
-        current_rule_subsegs = self.currentRule()['subsegs']
+        subsegs = self.currentRule()['subsegs']
 
         # Case 1: seg_name is defined in rule, that means end-of-rule is not encountered yet
         # Continue parsing using current_rule
-        if (seg_name in current_rule_subsegs):
-            seg_rule = current_rule_subsegs[seg_name]
+        if (seg_name in subsegs):
+            seg_rule = subsegs[seg_name]
 
             # Case 1.1: Regular segment
             if (seg_rule['segtype'] in [SegmentType.REGULAR, SegmentType.LOOP]):
@@ -100,10 +100,15 @@ class Parser:
 
                 _out_pointer.update(_parsed_seg)
 
-                if ('subsegs' in seg_rule):
+                if ('subsegs' in seg_rule or 'subsegs_link' in seg_rule):
                     # This means this segment contains child elements of itself
                     # The next element(s) should be parsed using the its nested rule
                     self.rule_stack.append(seg_rule)
+
+                    if ('subsegs_link' in seg_rule):
+                        map_idx = seg_rule['subsegs_link']['mapped_by_index']
+                        map_to = seg_rule['subsegs_link']['mapped_with']
+                        self.rule_stack.append(map_to[element_arr[map_idx+1]])
 
             # Case 1.2:
             # End-of-rule encountered now, that means there's no more child element for this rule
@@ -112,7 +117,7 @@ class Parser:
                 self.rule_stack.pop()
             return True
 
-        # Case 2: seg_name is defined in rule
+        # Case 2: seg_name is not defined in rule
         # Either segment definition is missing (un-implemented case), or
         # an end-of-loop signal
         else:
@@ -126,10 +131,16 @@ class Parser:
         counter = 1
         element_arr_len = len(element_arr)
         _seg_out = {}
-        template = Defs.segmentDef[segment_name]
-        for template_element in template:
-            _seg_out[template_element] = element_arr[counter]
-            counter = counter + 1
-            if (element_arr_len <= counter):
-                break
-        return _seg_out
+        if segment_name in Defs.segmentDef:
+            template = Defs.segmentDef[segment_name]
+            for template_element in template:
+                _seg_out[template_element] = element_arr[counter]
+                counter = counter + 1
+                if (element_arr_len <= counter):
+                    break
+            return _seg_out
+        else:
+            # Missing segment definition in Defs
+            # Should specify an error and terminate parser
+            # TODO: Handle error
+            return {}

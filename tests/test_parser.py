@@ -32,4 +32,8 @@ def test_Parser():
     tranx0 = group0['STs'][0]
     assert(tranx0['identifier_code'] == '810')
     assert(tranx0['control_number'] == '1004')
+    assert(tranx0['invoice_date'] == '20101204')
+    assert(tranx0['invoice_number'] == '217224')
+    assert(tranx0['order_date'] == '20101204')
+    assert(tranx0['order_number'] == 'P792940')
 
