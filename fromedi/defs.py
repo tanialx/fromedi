@@ -30,18 +30,18 @@ class Defs:
         # and is represented as:
         # SE: ['# Segments', 'Transaction Control Number']
 
-        'ISA': ['Authorization Qualifier', 'Authorization', 'Security Qualifier', 'Security', 
-                'Sender Qualifier', 'Sender ID', 'Receiver Qualifier', 'Receiver ID',
-                'Date', 'Time', 'Repetition Separator', 'Control Version Number', 'Control Number',
-                'Acknowledgment Requested', 'Usage Indicator'],
-        'GS': ['Functional ID Code', 'Sender\'s ID Code', 'Receiver\'s ID Code',
-               'Date', 'Time', 'Control Number', 'Responsible Agency Code',
-               'Version/Release/Identifier Code'],
-        'ST': ['Identifier Code', 'Control Number'],
-        'BIG': ['Invoice Date', 'Invoice Number', 'Order Date', 'Purchase Order Number', 'Release Number', 'Transaction Type'],
-        'SE': ['# Segments', 'Transaction Control Number'],
-        'GE': ['# Transaction Sets', 'Group Control Number'],
-        'IEA': ['# Groups', 'Interchange Control Number']
+        'ISA': ['authorization_qualifier', 'authorization', 'security_qualifier', 'security', 
+                'sender_qualifier', 'sender_id', 'receiver_qualifier', 'receiver_id',
+                'date', 'time', 'repetition_separator', 'control_version', 'control_number',
+                'acknowledgment_requested', 'usage_indicator'],
+        'GS': ['functional_id_code', 'sender_id_code', 'receiver_id_code',
+               'date', 'time', 'control_number', 'responsible_agency_code',
+               'version/release/identifier_code'],
+        'ST': ['identifier_code', 'control_number'],
+        'BIG': ['invoice_date', 'invoice_number', 'order_date', 'purchase_order_number', 'release_number', 'transaction_type'],
+        'SE': ['number_of_segments', 'transaction_control_number'],
+        'GE': ['number_of_transaction_sets', 'group_control_number'],
+        'IEA': ['number_of_groups', 'interchange_control_number']
     }
 
     rule = {
