@@ -113,7 +113,7 @@ class Parser:
                     if ('subsegs_link' in seg_rule):
                         map_idx = seg_rule['subsegs_link']['mapped_by_index']
                         map_to = seg_rule['subsegs_link']['mapped_with']
-                        self.rule_stack.append(map_to[element_arr[map_idx+1]])
+                        self.rule_stack.append(map_to[element_arr[map_idx]])
 
             # Case 1.2:
             # End-of-rule encountered now, that means there's no more child element for this rule

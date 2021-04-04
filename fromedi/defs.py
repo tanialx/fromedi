@@ -88,7 +88,8 @@ class Defs:
         # - subsegs: child segments
         # - subsegs_link: link to external dict using
         #                 (key = element value at index 'mapped_by_index')
-        #                 of the current segment
+        #                 of the current segment as in raw EDI (including the segment identifier)
+        #                 Ex: 'REF' has index 0 in REF*DP*099
         # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
         'ISA': {
@@ -100,10 +101,10 @@ class Defs:
                             'segtype': SegmentType.LOOP,
                             'subsegs_link': {
                                 # Example: ST*810*1004
-                                # 'mapped_by_index': 0 --> key value: 810
+                                # 'mapped_by_index': 1 --> key value: 810
                                 # Subsegs of this segment are retrieve from
                                 # tranx['810']
-                                'mapped_by_index': 0,
+                                'mapped_by_index': 1,
                                 'mapped_with': tranx
                             },
                             'subsegs': {
