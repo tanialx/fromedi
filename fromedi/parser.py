@@ -84,13 +84,15 @@ class Parser:
         if (seg_name in subsegs):
             seg_rule = subsegs[seg_name]
 
+            segtype = seg_rule['segtype'] if 'segtype' in seg_rule else SegmentType.REGULAR
+
             # Case 1.1: Regular segment
-            if (seg_rule['segtype'] in [SegmentType.REGULAR, SegmentType.LOOP]):
+            if (segtype in [SegmentType.REGULAR, SegmentType.LOOP]):
                 _parsed_seg = self.parse_regular_segment(seg_name, element_arr)
                 _out_pointer = self.outPointer()
 
                 # Segment of type Loop should be handled as List within the parent segment
-                if (seg_rule['segtype'] == SegmentType.LOOP):
+                if (segtype == SegmentType.LOOP):
                     # Create a new list with one empty element in _out and update pointers
                     # TODO: Handle subsequent elements in list
                     _out_pointer[seg_name + 's'] = [{}]
@@ -113,7 +115,7 @@ class Parser:
             # Case 1.2:
             # End-of-rule encountered now, that means there's no more child element for this rule
             # Remove current_rule from stack so that we can continue parsing its parent rule
-            elif (seg_rule['segtype'] == SegmentType.CLOSING):
+            elif (segtype == SegmentType.CLOSING):
                 self.rule_stack.pop()
             return True
 

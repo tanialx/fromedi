@@ -48,12 +48,8 @@ class Defs:
         # ASC X12 810: Invoice
         '810': {
             'subsegs': {
-                'BIG': {
-                    'segtype': SegmentType.REGULAR
-                },
-                'REF': {
-                    'segtype': SegmentType.REGULAR
-                },
+                'BIG': {},
+                'REF': {},
                 'N1': {
                     'segtype': SegmentType.LOOP,
                     'subsegs': {
@@ -63,24 +59,16 @@ class Defs:
                         'N4': {}
                     }
                 },
-                'ITD': {
-                    'segtype': SegmentType.REGULAR
-                },
+                'ITD': {},
                 'IT1': {
                     'segtype': SegmentType.LOOP,
                     'subsegs': {
                         'IT1': {}
                     }
                 },
-                'TDS': {
-                    'segtype': SegmentType.REGULAR
-                },
-                'CAD': {
-                    'segtype': SegmentType.REGULAR
-                },
-                'CTT': {
-                    'segtype': SegmentType.REGULAR
-                }
+                'TDS': {},
+                'CAD': {},
+                'CTT': {}
             }
         }
     }
@@ -89,14 +77,14 @@ class Defs:
 
         # Layout of EDI envenlope
         # - segtype: for handling special segments such as envelope level or Loop
+        #            If segment type is not set for a segment, it'll be parsed as REGULAR
         # - subsegs: child segments
-        # - subsegs_link: link to external dict using 
+        # - subsegs_link: link to external dict using
         #                 (key = element value at index 'mapped_by_index')
         #                 of the current segment
         # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
         'ISA': {
-            'segtype': SegmentType.REGULAR,
             'subsegs': {
                 'GS': {
                     'segtype': SegmentType.LOOP,
