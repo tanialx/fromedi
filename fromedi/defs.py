@@ -30,7 +30,7 @@ class Defs:
         # and is represented as:
         # SE: ['# Segments', 'Transaction Control Number']
 
-        'ISA': ['authorization_qualifier', 'authorization', 'security_qualifier', 'security', 
+        'ISA': ['authorization_qualifier', 'authorization', 'security_qualifier', 'security',
                 'sender_qualifier', 'sender_id', 'receiver_qualifier', 'receiver_id',
                 'date', 'time', 'repetition_separator', 'control_version', 'control_number',
                 'acknowledgment_requested', 'usage_indicator'],
@@ -38,10 +38,51 @@ class Defs:
                'date', 'time', 'control_number', 'responsible_agency_code',
                'version/release/identifier_code'],
         'ST': ['identifier_code', 'control_number'],
-        'BIG': ['invoice_date', 'invoice_number', 'order_date', 'purchase_order_number', 'release_number', 'transaction_type'],
+        'BIG': ['invoice_date', 'invoice_number', 'order_date', 'order_number', 'release_number', 'transaction_type'],
         'SE': ['number_of_segments', 'transaction_control_number'],
         'GE': ['number_of_transaction_sets', 'group_control_number'],
         'IEA': ['number_of_groups', 'interchange_control_number']
+    }
+
+    tranx = {
+        # ASC X12 810: Invoice
+        '810': {
+            'subsegs': {
+                'BIG': {
+                    'segtype': SegmentType.REGULAR
+                },
+                'REF': {
+                    'segtype': SegmentType.REGULAR
+                },
+                'N1': {
+                    'segtype': SegmentType.LOOP,
+                    'subsegs': {
+                        'N1': {},
+                        'N2': {},
+                        'N3': {},
+                        'N4': {}
+                    }
+                },
+                'ITD': {
+                    'segtype': SegmentType.REGULAR
+                },
+                'IT1': {
+                    'segtype': SegmentType.LOOP,
+                    'subsegs': {
+                        'IT1': {}
+                    }
+                },
+                'TDS': {
+                    'segtype': SegmentType.REGULAR
+                },
+                'CAD': {
+                    'segtype': SegmentType.REGULAR
+                },
+                'CTT': {
+                    'segtype': SegmentType.REGULAR
+                }
+            }
+        }
     }
 
     rule = {
@@ -49,6 +90,9 @@ class Defs:
         # Layout of EDI envenlope
         # - segtype: for handling special segments such as envelope level or Loop
         # - subsegs: child segments
+        # - subsegs_link: link to external dict using 
+        #                 (key = element value at index 'mapped_by_index')
+        #                 of the current segment
         # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
         'ISA': {
@@ -59,6 +103,14 @@ class Defs:
                     'subsegs': {
                         'ST': {
                             'segtype': SegmentType.LOOP,
+                            'subsegs_link': {
+                                # Example: ST*810*1004
+                                # 'mapped_by_index': 0 --> key value: 810
+                                # Subsegs of this segment are retrieve from
+                                # tranx['810']
+                                'mapped_by_index': 0,
+                                'mapped_with': tranx
+                            },
                             'subsegs': {
                                 # TODO: more segment defs
                                 'SE': {
