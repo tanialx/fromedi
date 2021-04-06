@@ -44,6 +44,7 @@ class Defs:
         'ST': ['identifier_code', 'control_number'],
         'BIG': ['invoice_date', 'invoice_number', 'order_date', 'order_number', 'release_number', 'transaction_type'],
         'N1': ['entity_id_code', 'name', 'id_code_qualifier', 'id_code'],
+        'TDS': ['total_amount'],
         'SE': ['number_of_segments', 'transaction_control_number'],
         'GE': ['number_of_transaction_sets', 'group_control_number'],
         'IEA': ['number_of_groups', 'interchange_control_number']

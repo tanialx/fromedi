@@ -46,3 +46,6 @@ def test_Parser():
     assert(name0['name'] == '')
     assert(name0['id_code_qualifier'] == '92')
     assert(name0['id_code'] == '123')
+
+    # Total Monetary Value Summary
+    assert(tranx0['total_amount'] == '21740')

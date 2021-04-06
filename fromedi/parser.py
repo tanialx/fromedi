@@ -77,7 +77,8 @@ class Parser:
         seg_name = element_arr[0].upper()
 
         # Retrieve current rule's child elements from stack
-        subsegs = self.currentRule()['subsegs']
+        current_rule = self.currentRule()
+        subsegs = current_rule['subsegs']
 
         # Case 1: seg_name is defined in rule, that means end-of-rule is not encountered yet
         # Continue parsing using current_rule
@@ -94,8 +95,12 @@ class Parser:
                 # Segment of type Loop should be handled as List within the parent segment
                 if (segtype == SegmentType.LOOP):
                     # Create a new list with one empty element in _out and update pointers
-                    # Look up loop name from Defs to wrap around the list
-                    loop_name = Defs.loopName[seg_name]
+                    # Look up loop name from Defs to wrap around the list,
+                    # if loop-name not defined, automatically construct it from base segment name
+                    if (seg_name in Defs.loopName):
+                        loop_name = Defs.loopName[seg_name]
+                    else:
+                        loop_name = seg_name + 's'
 
                     # TODO: Handle subsequent elements in list
                     _out_pointer[loop_name] = [{}]
@@ -134,8 +139,18 @@ class Parser:
         # Either segment definition is missing (un-implemented case), or
         # an end-of-loop signal
         else:
-            # Just skip the segment for now
-            # TODO: case 2 implementation
+            # Check if we are processing sub-segments of a LOOP
+            if ('segtype' in current_rule and current_rule['segtype'] == SegmentType.LOOP):
+                # Rule-end -> Remove last element(s) in stack
+                # and retry parsing using previous rule
+                self.rule_stack.pop()
+                self._out_pointer_stack.pop() # Remove loop array index
+                self._out_pointer_stack.pop() # Remove loop name
+                self.parseElement(element_arr)
+            else:
+                # TODO: Handle 'missing segment definition' error
+                pass
+            
             return True
 
     def parse_regular_segment(self, segment_name, element_arr):
