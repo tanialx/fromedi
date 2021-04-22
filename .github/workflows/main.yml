@@ -11,17 +11,15 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: '3.7'
-    - name: Create and start virtual environment
+    - name: Test
       run: |
+        # create and start virtual environment
         python3 -m venv venv
         source venv/bin/activate
-    - name: Install dependencies
-      run: |
+        # Install dependencies
         python -m pip install --upgrade pip
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-    - name: Test with pytest
-      run: |
+        # Test with pytest
         pytest
-    - name: Stop virtual environment
-      run: |
+        # Stop virtual environment
         source venv/bin/deactivate
