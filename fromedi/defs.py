@@ -21,6 +21,7 @@ class SegmentType(Enum):
     LOOP = 2
     CLOSING = 3
     KV_PAIR = 4
+    WRAP = 5
 
 
 class Defs:
@@ -59,36 +60,38 @@ class Defs:
     tranx = {
         # ASC X12 810: Invoice
         '810': {
-            'subsegs': {
-                'BIG': {},
-                'REF': {
-                    'segtype': SegmentType.KV_PAIR,
-                    'key_idx': 1
-                },
-                'N1': {
-                    'segtype': SegmentType.LOOP,
-                    'subsegs': {
-                        'N1': {},
-                        'N2': {},
-                        'N3': {},
-                        'N4': {}
-                    }
-                },
-                'ITD': {},
-                'IT1': {
-                    'segtype': SegmentType.LOOP,
-                    'subsegs': {
-                        'IT1': {}
-                    }
-                },
-                'TDS': {},
-                'CAD': {},
-                'CTT': {}
-            }
+            'subsegs': [{
+                'segname': 'BIG'
+            }, {
+                'segname': 'REF',
+                'segtype': SegmentType.KV_PAIR,
+                'key_idx': 1
+            }, {
+                'segname': 'N1',
+                'segtype': SegmentType.LOOP,
+                'subsegs': [
+                    {'segname': 'N1'},
+                    {'segname': 'N2'},
+                    {'segname': 'N3'},
+                    {'segname': 'N4'}
+                ]
+            }, {
+                'segname': 'ITD'
+            }, {
+                'segname': 'IT1',
+                'segtype': SegmentType.LOOP,
+                'subsegs': []
+            }, {
+                'segname': 'TDS'
+            }, {
+                'segname': 'CAD'
+            }, {
+                'segname': 'CTT'
+            }]
         }
     }
 
-    rule = {
+    rule = [{
 
         # Layout of EDI envenlope
         # - segtype: for handling special segments such as envelope level or Loop
@@ -100,36 +103,34 @@ class Defs:
         #                 Ex: 'REF' has index 0 in REF*DP*099
         # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
-        'ISA': {
-            'subsegs': {
-                'GS': {
-                    'segtype': SegmentType.LOOP,
-                    'subsegs': {
-                        'ST': {
-                            'segtype': SegmentType.LOOP,
-                            'subsegs_link': {
-                                # Example: ST*810*1004
-                                # 'mapped_by_index': 1 --> key value: 810
-                                # Subsegs of this segment are retrieve from
-                                # tranx['810']
-                                'mapped_by_index': 1,
-                                'mapped_with': tranx
-                            },
-                            'subsegs': {
-                                # TODO: more segment defs
-                                'SE': {
-                                    'segtype': SegmentType.CLOSING  # End of ST segment
-                                }
-                            }
-                        },
-                        'GE': {
-                            'segtype': SegmentType.CLOSING  # End of GS segment
+        'segname': 'ISA',
+        'subsegs': [{
+            'segname': 'GS',
+            'segtype': SegmentType.WRAP,
+            'subsegs': [{
+                    'segname': 'ST',
+                    'segtype': SegmentType.WRAP,
+                    'subsegs_link': {
+                        # Example: ST*810*1004
+                        # 'mapped_by_index': 1 --> key value: 810
+                        # Subsegs of this segment are retrieve from
+                        # tranx['810']
+                        'mapped_by_index': 1,
+                        'mapped_with': tranx
+                    },
+                    'subsegs': [
+                        {
+                            'segname': 'SE',
+                            'segtype': SegmentType.CLOSING,
                         }
-                    }
-                },
-                'IEA': {
-                    'segtype': SegmentType.CLOSING  # End of ISA segment
-                }
+                    ]
+                    }, {
+                'segname': 'GE',
+                'segtype': SegmentType.CLOSING,
             }
-        }
-    }
+            ]
+        }, {
+            'segname': 'IEA',
+            'segtype': SegmentType.CLOSING,
+        }]
+    }]

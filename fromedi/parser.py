@@ -21,7 +21,10 @@ class Parser:
         # After we've done processing with N1Loop, we remove it from stacked
         # --> [ISA, GS, ST] and continue with remaining elements of ST rule)
 
-        self.rule_stack = [{'subsegs': Defs.rule}]
+        self.rule_stack = [{
+            'rule': {'subsegs': Defs.rule},
+            'idx': 0 # the index of rule.subsegs we are currently at
+        }]
 
         # Stack contains _out's parent keys
         #
@@ -86,25 +89,31 @@ class Parser:
 
         # Retrieve current rule's child elements from stack
         current_rule = self.currentRule()
-        subsegs = current_rule['subsegs']
+        subsegs = current_rule['rule']['subsegs']
+
+        idx = current_rule['idx']
+
+        while (idx < len(subsegs) and subsegs[idx]['segname'] != seg_name):
+            idx = idx + 1
 
         # Case 1: seg_name is defined in rule, that means end-of-rule is not encountered yet
         # Continue parsing using current_rule
-        if (seg_name in subsegs):
+        if (idx < len(subsegs)):
+            current_rule['idx'] = idx
             logging.debug('[%s] found in sub-segments', seg_name)
-            seg_rule = subsegs[seg_name]
+            seg_rule = subsegs[idx]
 
             segtype = seg_rule['segtype'] if 'segtype' in seg_rule else SegmentType.REGULAR
             logging.debug('[%s] segment type: %s', seg_name, segtype)
 
             # Case 1.1: Regular segment
-            if (segtype in [SegmentType.REGULAR, SegmentType.LOOP]):
+            if (segtype in [SegmentType.REGULAR, SegmentType.WRAP, SegmentType.LOOP]):
                 logging.debug('[%s] parsing regular segment', seg_name)
                 _parsed_seg = self.parse_regular_segment(seg_name, element_arr)
                 _out_pointer = self.outPointer()
 
                 # Segment of type Loop should be handled as List within the parent segment
-                if (segtype == SegmentType.LOOP):
+                if (segtype in [SegmentType.WRAP, SegmentType.LOOP]):
                     logging.debug(
                         '[%s] special handling for loop segment', seg_name)
                     # Create a new list with one empty element in _out and update pointers
@@ -136,15 +145,30 @@ class Parser:
 
                 if ('subsegs' in seg_rule or 'subsegs_link' in seg_rule):
                     logging.debug('[%s] contains sub-segments', seg_name)
+
                     # This means this segment contains child elements of itself
                     # The next element(s) should be parsed using the its nested rule
-                    self.rule_stack.append(seg_rule)
+
+                    initial_idx = 0
+                    if (segtype == SegmentType.LOOP):
+                        # we have already parsed the first sub-segment in loop
+                        # so for the next line, we start at index 1 of rule's subsegs list
+                        initial_idx = 1
+
+                    self.rule_stack.append({
+                        'rule': seg_rule,
+                        'idx': initial_idx
+                    })
+
                     logging.debug('append rule to stack')
 
                     if ('subsegs_link' in seg_rule):
                         map_idx = seg_rule['subsegs_link']['mapped_by_index']
                         map_to = seg_rule['subsegs_link']['mapped_with']
-                        self.rule_stack.append(map_to[element_arr[map_idx]])
+                        self.rule_stack.append({
+                            'rule': map_to[element_arr[map_idx]],
+                            'idx': 0
+                        })
                         logging.debug('append rule to stack')
 
             # Case 1.2:
@@ -171,7 +195,7 @@ class Parser:
         # an end-of-loop signal
         else:
             # Check if we are processing sub-segments of a LOOP
-            if ('segtype' in current_rule and current_rule['segtype'] == SegmentType.LOOP):
+            if ('segtype' in current_rule['rule'] and current_rule['rule']['segtype'] in [SegmentType.LOOP, SegmentType.WRAP]):
                 # Rule-end -> Remove last element(s) in stack
                 # and retry parsing using previous rule
                 logging.debug('[%s] end-of-loop', seg_name)

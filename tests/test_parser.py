@@ -3,6 +3,7 @@ from fromedi.parser import Parser
 def test_Parser():
     parser = Parser()
     interchange = parser.fromFile('./tests/data/x12_810_0.edi')
+
     assert(interchange['authorization_qualifier'] == '01')
     assert(interchange['authorization'] == '0000000000')
     assert(interchange['security_qualifier'] == '01')
@@ -40,12 +41,19 @@ def test_Parser():
     # Reference ID    
     assert(tranx0['DP'] == '099')
     assert(tranx0['IA'] == '99999')
+    
     # Name(s)
     name0 = tranx0['names'][0]
     assert(name0['entity_id_code'] == 'ST')
     assert(name0['name'] == '')
     assert(name0['id_code_qualifier'] == '92')
     assert(name0['id_code'] == '123')
+
+    name1 = tranx0['names'][1]
+    assert(name1['entity_id_code'] == 'BT')
+    assert(name1['name'] == 'john')
+    assert(name1['id_code_qualifier'] == '91')
+    assert(name1['id_code'] == 'zz')
 
     # Total Monetary Value Summary
     assert(tranx0['total_amount'] == '21740')
