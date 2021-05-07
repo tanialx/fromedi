@@ -16,6 +16,11 @@ class SegmentType(Enum):
     # KV_PAIR:  Segment contains two elements, but one is the value of the other
     #           ex: REF*BM*00000000 should be translate directly as 'bill_of_lading': '00000000'
     #               instead of {'ref_id_qualifier': 'BM, 'ref_id': '00000000'}
+    # WRAP:     Repeated segments that may included child segments. This type is similar to LOOP
+    #           except that the the sub-segments are wrapped with opening and closing segments;
+    #           whereas in LOOP, the first segment of LOOP we encounter is the Loop's sub-segment
+    #           ex: - WRAP: ST (BIG REF) SE
+    #               - LOOP: (N1 N2 N3 N4)
 
     REGULAR = 1
     LOOP = 2
