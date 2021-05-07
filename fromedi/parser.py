@@ -114,62 +114,11 @@ class Parser:
 
                 # Segment of type Loop should be handled as List within the parent segment
                 if (segtype in [SegmentType.WRAP, SegmentType.LOOP]):
-                    logging.debug(
-                        '[%s] special handling for loop segment', seg_name)
-                    # Create a new list with one empty element in _out and update pointers
-                    # Look up loop name from Defs to wrap around the list,
-                    # if loop-name not defined, automatically construct it from base segment name
-                    if (seg_name in Defs.loopName):
-                        loop_name = Defs.loopName[seg_name]
-                        logging.debug(
-                            '[%s] loop name is defined as [%s]', seg_name, loop_name)
-                    else:
-                        loop_name = seg_name + 's'
-                        logging.debug(
-                            '[%s] loop name is not defined. Auto construct: [%s]', seg_name, loop_name)
-
-                    # Handle subsequent elements in list
-                    if _out_pointer.get(loop_name):
-                        out_pointer_loop_index = len(_out_pointer[loop_name]) # get the index of the next elem
-                        _out_pointer[loop_name].append({})
-                        _out_pointer = _out_pointer[loop_name][out_pointer_loop_index]
-                        self._out_pointer_stack.append(loop_name)
-                        self._out_pointer_stack.append(out_pointer_loop_index)
-                    else:
-                        _out_pointer[loop_name] = [{}]
-                        _out_pointer = _out_pointer[loop_name][0]
-                        self._out_pointer_stack.append(loop_name)
-                        self._out_pointer_stack.append(0)
+                    _out_pointer = self.prepare_nested_rule_parsing(_out_pointer, seg_name)
 
                 _out_pointer.update(_parsed_seg)
 
-                if ('subsegs' in seg_rule or 'subsegs_link' in seg_rule):
-                    logging.debug('[%s] contains sub-segments', seg_name)
-
-                    # This means this segment contains child elements of itself
-                    # The next element(s) should be parsed using the its nested rule
-
-                    initial_idx = 0
-                    if (segtype == SegmentType.LOOP):
-                        # we have already parsed the first sub-segment in loop
-                        # so for the next line, we start at index 1 of rule's subsegs list
-                        initial_idx = 1
-
-                    self.rule_stack.append({
-                        'rule': seg_rule,
-                        'idx': initial_idx
-                    })
-
-                    logging.debug('append rule to stack')
-
-                    if ('subsegs_link' in seg_rule):
-                        map_idx = seg_rule['subsegs_link']['mapped_by_index']
-                        map_to = seg_rule['subsegs_link']['mapped_with']
-                        self.rule_stack.append({
-                            'rule': map_to[element_arr[map_idx]],
-                            'idx': 0
-                        })
-                        logging.debug('append rule to stack')
+                self.check_for_subsegs(seg_rule, element_arr)
 
             # Case 1.2:
             # End-of-rule encountered now, that means there's no more child element for this rule
@@ -244,4 +193,64 @@ class Parser:
         else:
             # TODO: Handle error
             return {}
+
+    def prepare_nested_rule_parsing(self, _out_pointer, seg_name):
+        logging.debug('[%s] special handling for loop segment', seg_name)
+
+        # Create a new list with one empty element in _out and update pointers
+        # Look up loop name from Defs to wrap around the list,
+        # if loop-name not defined, automatically construct it from base segment name
+        if (seg_name in Defs.loopName):
+            loop_name = Defs.loopName[seg_name]
+            logging.debug('[%s] loop name is defined as [%s]',
+                          seg_name, loop_name)
+        else:
+            loop_name = seg_name + 's'
+            logging.debug(
+                '[%s] loop name is not defined. Auto construct: [%s]', seg_name, loop_name)
+
+        # Handle subsequent elements in list
+        if _out_pointer.get(loop_name):
+            # get the index of the next elem
+            out_pointer_loop_index = len(_out_pointer[loop_name])
+            _out_pointer[loop_name].append({})
+            _out_pointer = _out_pointer[loop_name][out_pointer_loop_index]
+            self._out_pointer_stack.append(loop_name)
+            self._out_pointer_stack.append(out_pointer_loop_index)
+        else:
+            _out_pointer[loop_name] = [{}]
+            _out_pointer = _out_pointer[loop_name][0]
+            self._out_pointer_stack.append(loop_name)
+            self._out_pointer_stack.append(0)
+        
+        return _out_pointer
+
+    def check_for_subsegs(self, seg_rule, element_arr):
+        if ('subsegs' in seg_rule or 'subsegs_link' in seg_rule):
+            logging.debug('[%s] contains sub-segments', seg_rule['segname'])
+
+            # This means this segment contains child elements of itself
+            # The next element(s) should be parsed using the its nested rule
+
+            initial_idx = 0
+            if ('segtype' in seg_rule and seg_rule['segtype'] == SegmentType.LOOP):
+                # we have already parsed the first sub-segment in loop
+                # so for the next line, we start at index 1 of rule's subsegs list
+                initial_idx = 1
+
+            self.rule_stack.append({
+                'rule': seg_rule,
+                'idx': initial_idx
+            })
+
+            logging.debug('append rule to stack')
+
+            if ('subsegs_link' in seg_rule):
+                map_idx = seg_rule['subsegs_link']['mapped_by_index']
+                map_to = seg_rule['subsegs_link']['mapped_with']
+                self.rule_stack.append({
+                    'rule': map_to[element_arr[map_idx]],
+                    'idx': 0
+                })
+                logging.debug('append rule to stack')
 
