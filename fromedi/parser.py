@@ -119,11 +119,18 @@ class Parser:
                         logging.debug(
                             '[%s] loop name is not defined. Auto construct: [%s]', seg_name, loop_name)
 
-                    # TODO: Handle subsequent elements in list
-                    _out_pointer[loop_name] = [{}]
-                    _out_pointer = _out_pointer[loop_name][0]
-                    self._out_pointer_stack.append(loop_name)
-                    self._out_pointer_stack.append(0)
+                    # Handle subsequent elements in list
+                    if _out_pointer.get(loop_name):
+                        out_pointer_loop_index = len(_out_pointer[loop_name]) # get the index of the next elem
+                        _out_pointer[loop_name].append({})
+                        _out_pointer = _out_pointer[loop_name][out_pointer_loop_index]
+                        self._out_pointer_stack.append(loop_name)
+                        self._out_pointer_stack.append(out_pointer_loop_index)
+                    else:
+                        _out_pointer[loop_name] = [{}]
+                        _out_pointer = _out_pointer[loop_name][0]
+                        self._out_pointer_stack.append(loop_name)
+                        self._out_pointer_stack.append(0)
 
                 _out_pointer.update(_parsed_seg)
 
