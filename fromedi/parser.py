@@ -107,13 +107,13 @@ class Parser:
             logging.debug('[%s] segment type: %s', seg_name, segtype)
 
             # Case 1.1: Regular segment
-            if (segtype in [SegmentType.REGULAR, SegmentType.WRAP, SegmentType.LOOP]):
+            if (segtype in [SegmentType.REGULAR, SegmentType.ENVELOPE_OPENING, SegmentType.LOOP]):
                 logging.debug('[%s] parsing regular segment', seg_name)
                 _parsed_seg = self.parse_regular_segment(seg_name, element_arr)
                 _out_pointer = self.outPointer()
 
                 # Segment of type Loop should be handled as List within the parent segment
-                if (segtype in [SegmentType.WRAP, SegmentType.LOOP]):
+                if (segtype in [SegmentType.ENVELOPE_OPENING, SegmentType.LOOP]):
                     _out_pointer = self.prepare_nested_rule_parsing(_out_pointer, seg_name)
 
                 _out_pointer.update(_parsed_seg)
@@ -123,7 +123,7 @@ class Parser:
             # Case 1.2:
             # End-of-rule encountered now, that means there's no more child element for this rule
             # Remove current_rule from stack so that we can continue parsing its parent rule
-            elif (segtype == SegmentType.CLOSING):
+            elif (segtype == SegmentType.ENVELOPE_CLOSING):
                 logging.debug('[%s] closing segment', seg_name)
                 self.rule_stack.pop()
                 logging.debug('remove rule from stack')
@@ -144,7 +144,7 @@ class Parser:
         # an end-of-loop signal
         else:
             # Check if we are processing sub-segments of a LOOP
-            if ('segtype' in current_rule['rule'] and current_rule['rule']['segtype'] in [SegmentType.LOOP, SegmentType.WRAP]):
+            if ('segtype' in current_rule['rule'] and current_rule['rule']['segtype'] in [SegmentType.LOOP, SegmentType.ENVELOPE_OPENING]):
                 # Rule-end -> Remove last element(s) in stack
                 # and retry parsing using previous rule
                 logging.debug('[%s] end-of-loop', seg_name)

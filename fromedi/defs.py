@@ -11,22 +11,24 @@ class SegmentType(Enum):
 
     # REGULAR:  Requires no special processing (all segments except LOOP and CLOSING)
     # LOOP:     Repeated segments that may included child segments
-    # CLOSING:  Signal end of current segment (no more child),
-    #           ex: SE signals end of transaction data (which starts with ST)
     # KV_PAIR:  Segment contains two elements, but one is the value of the other
     #           ex: REF*BM*00000000 should be translate directly as 'bill_of_lading': '00000000'
     #               instead of {'ref_id_qualifier': 'BM, 'ref_id': '00000000'}
-    # WRAP:     Repeated segments that may included child segments. This type is similar to LOOP
+    # ENVELOPE_OPENING:  
+    #           Repeated segments that may included child segments. This type is similar to LOOP
     #           except that the the sub-segments are wrapped with opening and closing segments;
     #           whereas in LOOP, the first segment of LOOP we encounter is the Loop's sub-segment
     #           ex: - WRAP: ST (BIG REF) SE
     #               - LOOP: (N1 N2 N3 N4)
+    # ENVELOPE_CLOSING: 
+    #           Signal end of current segment (no more child) which previously starts with ENVELOPE_OPENING,
+    #           ex: SE signals end of transaction data (which starts with ST)
 
     REGULAR = 1
     LOOP = 2
-    CLOSING = 3
-    KV_PAIR = 4
-    WRAP = 5
+    KV_PAIR = 3
+    ENVELOPE_OPENING = 4
+    ENVELOPE_CLOSING = 5
 
 
 class Defs:
@@ -111,10 +113,10 @@ class Defs:
         'segname': 'ISA',
         'subsegs': [{
             'segname': 'GS',
-            'segtype': SegmentType.WRAP,
+            'segtype': SegmentType.ENVELOPE_OPENING,
             'subsegs': [{
                     'segname': 'ST',
-                    'segtype': SegmentType.WRAP,
+                    'segtype': SegmentType.ENVELOPE_OPENING,
                     'subsegs_link': {
                         # Example: ST*810*1004
                         # 'mapped_by_index': 1 --> key value: 810
@@ -126,16 +128,16 @@ class Defs:
                     'subsegs': [
                         {
                             'segname': 'SE',
-                            'segtype': SegmentType.CLOSING,
+                            'segtype': SegmentType.ENVELOPE_CLOSING,
                         }
                     ]
                     }, {
                 'segname': 'GE',
-                'segtype': SegmentType.CLOSING,
+                'segtype': SegmentType.ENVELOPE_CLOSING,
             }
             ]
         }, {
             'segname': 'IEA',
-            'segtype': SegmentType.CLOSING,
+            'segtype': SegmentType.ENVELOPE_CLOSING,
         }]
     }]
