@@ -154,8 +154,7 @@ class Parser:
             # Example segments of this case are REF, DTM
             elif (segtype == SegmentType.KV_PAIR):
                 logging.debug('[%s] parsing kv-pair segment', seg_name)
-                _parsed_seg = self.parse_key_value_pair_segment(
-                    element_arr, seg_rule['key_idx'])
+                _parsed_seg = self.parse_key_value_pair_segment(element_arr, seg_rule)
                 self.outPointer().update(_parsed_seg)
 
             return True
@@ -205,7 +204,10 @@ class Parser:
             # TODO: Handle error
             return {}
 
-    def parse_key_value_pair_segment(self, element_arr, key_idx):
+    def parse_key_value_pair_segment(self, element_arr, seg_rule):
+
+        key_idx = seg_rule['key_idx']
+
         if len(element_arr) > key_idx:
 
             segname = element_arr[0]
@@ -219,7 +221,7 @@ class Parser:
             element_arr.remove(element_arr[0])
             value = element_arr[0]
 
-            kvPairKey = Parser.readExternalDefs('fromedi/literal/{}_{}.json'.format(segname, key_idx))
+            kvPairKey = Parser.readExternalDefs('fromedi/literal/{}.json'.format(seg_rule['literal_ref']))
 
             # try to get literal name of key code if exists
             if (key in kvPairKey):

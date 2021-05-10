@@ -6,7 +6,8 @@
     {
         "segname": "REF",
         "segtype": "KV_PAIR",
-        "key_idx": 1
+        "key_idx": 1,
+        "literal_ref": "reference_id_qualifier"
     },
     {
         "segname": "N1",
