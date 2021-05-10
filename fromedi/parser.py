@@ -240,8 +240,8 @@ class Parser:
         # Create a new list with one empty element in _out and update pointers
         # Look up loop name from Defs to wrap around the list,
         # if loop-name not defined, automatically construct it from base segment name
-        if (seg_name in Defs.loopName):
-            loop_name = Defs.loopName[seg_name]
+        if (seg_name in Defs.loop and 'loop_name' in Defs.loop[seg_name]):
+            loop_name = Defs.loop[seg_name]['loop_name']
             logging.debug('[%s] loop name is defined as [%s]',
                           seg_name, loop_name)
         else:
@@ -289,13 +289,18 @@ class Parser:
                 map_idx = seg_rule['subsegs_link']['mapped_by_index']
                 map_to = seg_rule['subsegs_link']['mapped_with']
 
-                if (map_to == 'struct'):
+                if (map_to == 'file:struct'):
                     map_to = Parser.readExternalDefs(
                         'fromedi/struct/{}/{}.json'.format(seg_rule['segname'], element_arr[map_idx]))
+                elif map_to == 'defs:loop':
+                    map_to = Defs.loop[element_arr[map_idx]]['subsegs']
                 else:
                     map_to = map_to[element_arr[map_idx]]
 
-                seg_rule['subsegs'] = map_to + seg_rule['subsegs']
+                if 'subsegs' in seg_rule:
+                    seg_rule['subsegs'] = map_to + seg_rule['subsegs']
+                else:
+                    seg_rule['subsegs'] = map_to
 
                 logging.debug('append rule to stack')
 

@@ -58,10 +58,30 @@ class Defs:
         'IEA': ['number_of_groups', 'interchange_control_number']
     }
 
-    loopName = {
-        'N1': 'names',
-        'GS': 'groups',
-        'ST': 'transactions'
+    loop = {
+        'GS': {
+            'loop_name': 'groups'
+        },
+        'ST': {
+            'loop_name': 'transactions'
+        },
+        'N1': {
+            'loop_name': 'names',
+            'subsegs': [
+                {
+                    "segname": "N1"
+                },
+                {
+                    "segname": "N2"
+                },
+                {
+                    "segname": "N3"
+                },
+                {
+                    "segname": "N4"
+                }
+            ]
+        }
     }
 
     rule = [{
@@ -92,7 +112,7 @@ class Defs:
                         # 'fromedi/struct/<this_segment_name>/<value_at_mapped_by_index>.json'
                         # (it's also possible to map with a dict object; in that case, the mapping would be to
                         # obj[<value_at_mapped_by_index>])
-                        'mapped_with': 'struct'
+                        'mapped_with': 'file:struct'
                     },
                     'subsegs': [
                         {

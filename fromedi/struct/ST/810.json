@@ -12,20 +12,10 @@
     {
         "segname": "N1",
         "segtype": "LOOP",
-        "subsegs": [
-            {
-                "segname": "N1"
-            },
-            {
-                "segname": "N2"
-            },
-            {
-                "segname": "N3"
-            },
-            {
-                "segname": "N4"
-            }
-        ]
+        "subsegs_link": {
+            "mapped_by_index": 0,
+            "mapped_with": "defs:loop"
+        }
     },
     {
         "segname": "ITD"
