@@ -1,4 +1,5 @@
 from fromedi.defs import Token, SegmentType, Defs
+import json
 import logging
 
 logging.basicConfig(format='%(asctime)s %(funcName)s: %(message)s', level=logging.DEBUG)
@@ -78,6 +79,22 @@ class Parser:
         logging.debug('OUTPUT:\n %s', self._out)
         return self._out
 
+    def readExternalDefs(path):
+        f = open(path, 'r')  # Opening JSON file
+        extdefs = json.load(f)  # returns JSON object as a dictionary
+        f.close()  # Close file
+        return extdefs
+
+    def segmentType(segment):
+        if ('segtype' in segment):
+            declaredSegtype = segment['segtype']
+            if (declaredSegtype in [SegmentType.ENVELOPE_CLOSING, SegmentType.ENVELOPE_OPENING, SegmentType.KV_PAIR, SegmentType.LOOP, SegmentType.REGULAR]):
+                return declaredSegtype
+            else:
+                return SegmentType[declaredSegtype]
+        else:
+            return SegmentType.REGULAR
+
     # Each EDI segment is converted to list previously in 'fromFile' func
     # Ex: BIG*20101204*217224*20101204*P792940
     # --> [BIG, 20101204, 217224, 20101204, P792940] (elementArr)
@@ -103,7 +120,7 @@ class Parser:
             logging.debug('[%s] found in sub-segments', seg_name)
             seg_rule = subsegs[idx]
 
-            segtype = seg_rule['segtype'] if 'segtype' in seg_rule else SegmentType.REGULAR
+            segtype = Parser.segmentType(seg_rule)
             logging.debug('[%s] segment type: %s', seg_name, segtype)
 
             # Case 1.1: Regular segment
@@ -114,7 +131,8 @@ class Parser:
 
                 # Segment of type Loop should be handled as List within the parent segment
                 if (segtype in [SegmentType.ENVELOPE_OPENING, SegmentType.LOOP]):
-                    _out_pointer = self.prepare_nested_rule_parsing(_out_pointer, seg_name)
+                    _out_pointer = self.prepare_nested_rule_parsing(
+                        _out_pointer, seg_name)
 
                 _out_pointer.update(_parsed_seg)
 
@@ -144,7 +162,7 @@ class Parser:
         # an end-of-loop signal
         else:
             # Check if we are processing sub-segments of a LOOP
-            if ('segtype' in current_rule['rule'] and current_rule['rule']['segtype'] in [SegmentType.LOOP, SegmentType.ENVELOPE_OPENING]):
+            if (Parser.segmentType(current_rule['rule']) in [SegmentType.LOOP, SegmentType.ENVELOPE_OPENING]):
                 # Rule-end -> Remove last element(s) in stack
                 # and retry parsing using previous rule
                 logging.debug('[%s] end-of-loop', seg_name)
@@ -242,7 +260,7 @@ class Parser:
             # The next element(s) should be parsed using the its nested rule
 
             initial_idx = 0
-            if ('segtype' in seg_rule and seg_rule['segtype'] == SegmentType.LOOP):
+            if (Parser.segmentType(seg_rule) == SegmentType.LOOP):
                 # we have already parsed the first sub-segment in loop
                 # so for the next line, we start at index 1 of rule's subsegs list
                 initial_idx = 1
@@ -257,9 +275,14 @@ class Parser:
             if ('subsegs_link' in seg_rule):
                 map_idx = seg_rule['subsegs_link']['mapped_by_index']
                 map_to = seg_rule['subsegs_link']['mapped_with']
-                self.rule_stack.append({
-                    'rule': map_to[element_arr[map_idx]],
-                    'idx': 0
-                })
+
+                if (map_to == 'struct'):
+                    map_to = Parser.readExternalDefs(
+                        'fromedi/struct/{}/{}.json'.format(seg_rule['segname'], element_arr[map_idx]))
+                else:
+                    map_to = map_to[element_arr[map_idx]]
+
+                seg_rule['subsegs'] = map_to['subsegs'] + seg_rule['subsegs']
+
                 logging.debug('append rule to stack')
 

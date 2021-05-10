@@ -1,0 +1,47 @@
+{
+    "subsegs": [
+        {
+            "segname": "BIG"
+        },
+        {
+            "segname": "REF",
+            "segtype": "KV_PAIR",
+            "key_idx": 1
+        },
+        {
+            "segname": "N1",
+            "segtype": "LOOP",
+            "subsegs": [
+                {
+                    "segname": "N1"
+                },
+                {
+                    "segname": "N2"
+                },
+                {
+                    "segname": "N3"
+                },
+                {
+                    "segname": "N4"
+                }
+            ]
+        },
+        {
+            "segname": "ITD"
+        },
+        {
+            "segname": "IT1",
+            "segtype": "LOOP",
+            "subsegs": []
+        },
+        {
+            "segname": "TDS"
+        },
+        {
+            "segname": "CAD"
+        },
+        {
+            "segname": "CTT"
+        }
+    ]
+}

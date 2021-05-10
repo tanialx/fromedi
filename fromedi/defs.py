@@ -70,52 +70,16 @@ class Defs:
             'IA': 'internal_vendor_number'
         }
     }
-
-    tranx = {
-        # ASC X12 810: Invoice
-        '810': {
-            'subsegs': [{
-                'segname': 'BIG'
-            }, {
-                'segname': 'REF',
-                'segtype': SegmentType.KV_PAIR,
-                'key_idx': 1
-            }, {
-                'segname': 'N1',
-                'segtype': SegmentType.LOOP,
-                'subsegs': [
-                    {'segname': 'N1'},
-                    {'segname': 'N2'},
-                    {'segname': 'N3'},
-                    {'segname': 'N4'}
-                ]
-            }, {
-                'segname': 'ITD'
-            }, {
-                'segname': 'IT1',
-                'segtype': SegmentType.LOOP,
-                'subsegs': []
-            }, {
-                'segname': 'TDS'
-            }, {
-                'segname': 'CAD'
-            }, {
-                'segname': 'CTT'
-            }]
-        }
-    }
-
     rule = [{
 
         # Layout of EDI envenlope
         # - segtype: for handling special segments such as envelope level or Loop
         #            If segment type is not set for a segment, it'll be parsed as REGULAR
         # - subsegs: child segments
-        # - subsegs_link: link to external dict using
+        # - subsegs_link: link to external dict/file using
         #                 (key = element value at index 'mapped_by_index')
         #                 of the current segment as in raw EDI (including the segment identifier)
         #                 Ex: 'REF' has index 0 in REF*DP*099
-        # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
         'segname': 'ISA',
         'subsegs': [{
@@ -125,12 +89,16 @@ class Defs:
                     'segname': 'ST',
                     'segtype': SegmentType.ENVELOPE_OPENING,
                     'subsegs_link': {
-                        # Example: ST*810*1004
-                        # 'mapped_by_index': 1 --> key value: 810
-                        # Subsegs of this segment are retrieve from
-                        # tranx['810']
+
+                        # Example: ST*810*1004, with 'mapped_by_index': 1 --> key value: 810
+                        # Subsegs of this segment are retrieve from file 'struct/ST/810.json'
                         'mapped_by_index': 1,
-                        'mapped_with': tranx
+
+                        # if 'mapped_with' = 'struct', file path is constructed as 
+                        # 'fromedi/struct/<this_segment_name>/<value_at_mapped_by_index>.json'
+                        # (it's also possible to map with a dict object; in that case, the mapping would be to
+                        # obj[<value_at_mapped_by_index>])
+                        'mapped_with': 'struct'
                     },
                     'subsegs': [
                         {
