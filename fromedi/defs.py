@@ -6,7 +6,8 @@ class Token:
     compositeElementSeparator = ':'
     segmentSeparator = '~'
 
-
+# Define types of segments in an EDI
+# Change to this class should be reflected in func 'segmentType' of parser.py
 class SegmentType(Enum):
 
     # REGULAR:  Requires no special processing (all segments except LOOP and CLOSING)

@@ -79,12 +79,15 @@ class Parser:
         logging.debug('OUTPUT:\n %s', self._out)
         return self._out
 
+    # Read external file into json object
     def readExternalDefs(path):
         f = open(path, 'r')  # Opening JSON file
         extdefs = json.load(f)  # returns JSON object as a dictionary
         f.close()  # Close file
         return extdefs
 
+    # match the type of input segment to defined SegmentType in defs.py
+    # if 'segtype' not declared in segment -> default type: REGULAR
     def segmentType(segment):
         if ('segtype' in segment):
             declaredSegtype = segment['segtype']
@@ -126,7 +129,7 @@ class Parser:
             # Case 1.1: Regular segment
             if (segtype in [SegmentType.REGULAR, SegmentType.ENVELOPE_OPENING, SegmentType.LOOP]):
                 logging.debug('[%s] parsing regular segment', seg_name)
-                _parsed_seg = self.parse_regular_segment(seg_name, seg_rule, element_arr)
+                _parsed_seg = self.parse_regular_segment(seg_rule, element_arr)
                 _out_pointer = self.outPointer()
 
                 # Segment of type Loop should be handled as List within the parent segment
@@ -176,7 +179,7 @@ class Parser:
 
             return True
 
-    def parse_regular_segment(self, segment_name, seg_rule, element_arr):
+    def parse_regular_segment(self, seg_rule, element_arr):
         # Mapping elements of input segment and Defs.commonSegmentDef
         # one-by-one to retrieve the names of the EDI segment element values
         counter = 1
@@ -186,8 +189,8 @@ class Parser:
         element_names = []
         if 'element_names' in seg_rule:
             element_names = seg_rule['element_names']
-        elif segment_name in Defs.commonSegmentDef:
-            element_names = Defs.commonSegmentDef[segment_name]
+        elif seg_rule['segname'] in Defs.commonSegmentDef:
+            element_names = Defs.commonSegmentDef[seg_rule['segname']]
 
         if len(element_names) > 0:
             for element_name in element_names:
