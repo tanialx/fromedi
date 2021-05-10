@@ -39,8 +39,8 @@ def test_Parser():
                         'invoice_number': '217224',
                         'order_date': '20101204',
                         'order_number': 'P792940',
-                        'DP': '099',
-                        'IA': '99999',
+                        'department_number': '099',
+                        'internal_vendor_number': '99999',
                         'names': [
                             {
                                 'entity_id_code': 'ST',

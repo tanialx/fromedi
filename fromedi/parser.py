@@ -180,13 +180,22 @@ class Parser:
 
     def parse_key_value_pair_segment(self, element_arr, key_idx):
         if len(element_arr) > key_idx:
+
+            segname = element_arr[0]
+
             key = element_arr[key_idx]
+
             # Remove segment name and the key from element_arr
             # the one(s) left are the value(s)
             # Currently assume that this segment type is always of length 3 segment_name*key*value
             element_arr.remove(key)
             element_arr.remove(element_arr[0])
             value = element_arr[0]
+
+            # try to get literal name of key code if exists
+            if (segname in Defs.kvPairKey and key in Defs.kvPairKey[segname]):
+                key = Defs.kvPairKey[segname][key]
+
             return {
                 key: value
             }

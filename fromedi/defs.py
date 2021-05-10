@@ -64,6 +64,13 @@ class Defs:
         'ST': 'transactions'
     }
 
+    kvPairKey = {
+        'REF': {
+            'DP': 'department_number',
+            'IA': 'internal_vendor_number'
+        }
+    }
+
     tranx = {
         # ASC X12 810: Invoice
         '810': {
