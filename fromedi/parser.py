@@ -115,6 +115,10 @@ class Parser:
 
         while (idx < len(subsegs) and subsegs[idx]['segname'] != seg_name):
             idx = idx + 1
+            if (idx < len(subsegs) and 'link' in subsegs[idx]):
+                # replace 'link' properties with complete segment definition
+                if subsegs[idx]['link']['to'] == 'defs:struct':
+                    subsegs[idx] = Defs.struct[subsegs[idx]['link']['id']]
 
         # Case 1: seg_name is defined in rule, that means end-of-rule is not encountered yet
         # Continue parsing using current_rule
@@ -134,8 +138,7 @@ class Parser:
 
                 # Segment of type Loop should be handled as List within the parent segment
                 if (segtype in [SegmentType.ENVELOPE_OPENING, SegmentType.LOOP]):
-                    _out_pointer = self.prepare_nested_rule_parsing(
-                        _out_pointer, seg_name)
+                    _out_pointer = self.prepare_nested_rule_parsing(_out_pointer, seg_rule)
 
                 _out_pointer.update(_parsed_seg)
 
@@ -234,14 +237,17 @@ class Parser:
             # TODO: Handle error
             return {}
 
-    def prepare_nested_rule_parsing(self, _out_pointer, seg_name):
+    def prepare_nested_rule_parsing(self, _out_pointer, seg_rule):
+
+        seg_name = seg_rule['segname']
+
         logging.debug('[%s] special handling for loop segment', seg_name)
 
         # Create a new list with one empty element in _out and update pointers
         # Look up loop name from Defs to wrap around the list,
         # if loop-name not defined, automatically construct it from base segment name
-        if (seg_name in Defs.loop and 'loop_name' in Defs.loop[seg_name]):
-            loop_name = Defs.loop[seg_name]['loop_name']
+        if ('loopname' in seg_rule):
+            loop_name = seg_rule['loopname']
             logging.debug('[%s] loop name is defined as [%s]',
                           seg_name, loop_name)
         else:

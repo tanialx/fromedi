@@ -58,15 +58,17 @@ class Defs:
         'IEA': ['number_of_groups', 'interchange_control_number']
     }
 
-    loop = {
-        'GS': {
-            'loop_name': 'groups'
+    struct = {
+        'REF': {
+            "segname": "REF",
+            "segtype": "KV_PAIR",
+            "key_idx": 1,
+            "literal_ref": "reference_id_qualifier"
         },
-        'ST': {
-            'loop_name': 'transactions'
-        },
-        'N1': {
-            'loop_name': 'names',
+        'N1Loop': {
+            'loopname': 'names',
+            "segname": "N1",
+            "segtype": "LOOP",
             'subsegs': [
                 {
                     "segname": "N1"
@@ -98,17 +100,19 @@ class Defs:
         'segname': 'ISA',
         'subsegs': [{
             'segname': 'GS',
+            'loopname': 'groups',
             'segtype': SegmentType.ENVELOPE_OPENING,
             'subsegs': [{
                     'segname': 'ST',
                     'segtype': SegmentType.ENVELOPE_OPENING,
+                    'loopname': 'transactions',
                     'subsegs_link': {
 
                         # Example: ST*810*1004, with 'mapped_by_index': 1 --> key value: 810
                         # Subsegs of this segment are retrieve from file 'struct/ST/810.json'
                         'mapped_by_index': 1,
 
-                        # if 'mapped_with' = 'struct', file path is constructed as 
+                        # if 'mapped_with' = 'file:struct', file path is constructed as 
                         # 'fromedi/struct/<this_segment_name>/<value_at_mapped_by_index>.json'
                         # (it's also possible to map with a dict object; in that case, the mapping would be to
                         # obj[<value_at_mapped_by_index>])

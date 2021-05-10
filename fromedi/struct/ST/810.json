@@ -4,18 +4,10 @@
         "element_names": [ "invoice_date", "invoice_number", "order_date", "order_number", "release_number", "transaction_type" ]
     },
     {
-        "segname": "REF",
-        "segtype": "KV_PAIR",
-        "key_idx": 1,
-        "literal_ref": "reference_id_qualifier"
+        "link": { "to": "defs:struct", "id": "REF" }
     },
     {
-        "segname": "N1",
-        "segtype": "LOOP",
-        "subsegs_link": {
-            "mapped_by_index": 0,
-            "mapped_with": "defs:loop"
-        }
+        "link": { "to": "defs:struct", "id": "N1Loop" }
     },
     {
         "segname": "ITD"
