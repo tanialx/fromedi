@@ -290,7 +290,7 @@ class Parser:
                 else:
                     map_to = map_to[element_arr[map_idx]]
 
-                seg_rule['subsegs'] = map_to['subsegs'] + seg_rule['subsegs']
+                seg_rule['subsegs'] = map_to + seg_rule['subsegs']
 
                 logging.debug('append rule to stack')
 

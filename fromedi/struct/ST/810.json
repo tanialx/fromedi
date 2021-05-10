@@ -1,48 +1,46 @@
-{
-    "subsegs": [
-        {
-            "segname": "BIG",
-            "element_names": [ "invoice_date", "invoice_number", "order_date", "order_number", "release_number", "transaction_type" ]
-        },
-        {
-            "segname": "REF",
-            "segtype": "KV_PAIR",
-            "key_idx": 1
-        },
-        {
-            "segname": "N1",
-            "segtype": "LOOP",
-            "subsegs": [
-                {
-                    "segname": "N1"
-                },
-                {
-                    "segname": "N2"
-                },
-                {
-                    "segname": "N3"
-                },
-                {
-                    "segname": "N4"
-                }
-            ]
-        },
-        {
-            "segname": "ITD"
-        },
-        {
-            "segname": "IT1",
-            "segtype": "LOOP",
-            "subsegs": []
-        },
-        {
-            "segname": "TDS"
-        },
-        {
-            "segname": "CAD"
-        },
-        {
-            "segname": "CTT"
-        }
-    ]
-}
+[
+    {
+        "segname": "BIG",
+        "element_names": [ "invoice_date", "invoice_number", "order_date", "order_number", "release_number", "transaction_type" ]
+    },
+    {
+        "segname": "REF",
+        "segtype": "KV_PAIR",
+        "key_idx": 1
+    },
+    {
+        "segname": "N1",
+        "segtype": "LOOP",
+        "subsegs": [
+            {
+                "segname": "N1"
+            },
+            {
+                "segname": "N2"
+            },
+            {
+                "segname": "N3"
+            },
+            {
+                "segname": "N4"
+            }
+        ]
+    },
+    {
+        "segname": "ITD"
+    },
+    {
+        "segname": "IT1",
+        "segtype": "LOOP",
+        "subsegs": []
+    },
+    {
+        "segname": "TDS"
+    },
+    {
+        "segname": "CAD"
+    },
+    {
+        "segname": "CTT"
+    }
+]
