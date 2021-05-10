@@ -6,7 +6,8 @@ class Token:
     compositeElementSeparator = ':'
     segmentSeparator = '~'
 
-
+# Define types of segments in an EDI
+# Change to this class should be reflected in func 'segmentType' of parser.py
 class SegmentType(Enum):
 
     # REGULAR:  Requires no special processing (all segments except LOOP and CLOSING)
@@ -33,7 +34,7 @@ class SegmentType(Enum):
 
 class Defs:
 
-    segmentDef = {
+    commonSegmentDef = {
 
         # Name for segment's elements corresponding to position in EDI segment
         # Ex.
@@ -50,7 +51,6 @@ class Defs:
                'date', 'time', 'control_number', 'responsible_agency_code',
                'version/release/identifier_code'],
         'ST': ['identifier_code', 'control_number'],
-        'BIG': ['invoice_date', 'invoice_number', 'order_date', 'order_number', 'release_number', 'transaction_type'],
         'N1': ['entity_id_code', 'name', 'id_code_qualifier', 'id_code'],
         'TDS': ['total_amount'],
         'SE': ['number_of_segments', 'transaction_control_number'],
@@ -58,50 +58,31 @@ class Defs:
         'IEA': ['number_of_groups', 'interchange_control_number']
     }
 
-    loopName = {
-        'N1': 'names',
-        'GS': 'groups',
-        'ST': 'transactions'
-    }
-
-    kvPairKey = {
+    struct = {
         'REF': {
-            'DP': 'department_number',
-            'IA': 'internal_vendor_number'
-        }
-    }
-
-    tranx = {
-        # ASC X12 810: Invoice
-        '810': {
-            'subsegs': [{
-                'segname': 'BIG'
-            }, {
-                'segname': 'REF',
-                'segtype': SegmentType.KV_PAIR,
-                'key_idx': 1
-            }, {
-                'segname': 'N1',
-                'segtype': SegmentType.LOOP,
-                'subsegs': [
-                    {'segname': 'N1'},
-                    {'segname': 'N2'},
-                    {'segname': 'N3'},
-                    {'segname': 'N4'}
-                ]
-            }, {
-                'segname': 'ITD'
-            }, {
-                'segname': 'IT1',
-                'segtype': SegmentType.LOOP,
-                'subsegs': []
-            }, {
-                'segname': 'TDS'
-            }, {
-                'segname': 'CAD'
-            }, {
-                'segname': 'CTT'
-            }]
+            "segname": "REF",
+            "segtype": "KV_PAIR",
+            "key_idx": 1,
+            "literal_ref": "reference_id_qualifier"
+        },
+        'N1Loop': {
+            'loopname': 'names',
+            "segname": "N1",
+            "segtype": "LOOP",
+            'subsegs': [
+                {
+                    "segname": "N1"
+                },
+                {
+                    "segname": "N2"
+                },
+                {
+                    "segname": "N3"
+                },
+                {
+                    "segname": "N4"
+                }
+            ]
         }
     }
 
@@ -111,26 +92,31 @@ class Defs:
         # - segtype: for handling special segments such as envelope level or Loop
         #            If segment type is not set for a segment, it'll be parsed as REGULAR
         # - subsegs: child segments
-        # - subsegs_link: link to external dict using
+        # - subsegs_link: link to external dict/file using
         #                 (key = element value at index 'mapped_by_index')
         #                 of the current segment as in raw EDI (including the segment identifier)
         #                 Ex: 'REF' has index 0 in REF*DP*099
-        # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
         'segname': 'ISA',
         'subsegs': [{
             'segname': 'GS',
+            'loopname': 'groups',
             'segtype': SegmentType.ENVELOPE_OPENING,
             'subsegs': [{
                     'segname': 'ST',
                     'segtype': SegmentType.ENVELOPE_OPENING,
+                    'loopname': 'transactions',
                     'subsegs_link': {
-                        # Example: ST*810*1004
-                        # 'mapped_by_index': 1 --> key value: 810
-                        # Subsegs of this segment are retrieve from
-                        # tranx['810']
+
+                        # Example: ST*810*1004, with 'mapped_by_index': 1 --> key value: 810
+                        # Subsegs of this segment are retrieve from file 'struct/ST/810.json'
                         'mapped_by_index': 1,
-                        'mapped_with': tranx
+
+                        # if 'mapped_with' = 'file:struct', file path is constructed as 
+                        # 'fromedi/struct/<this_segment_name>/<value_at_mapped_by_index>.json'
+                        # (it's also possible to map with a dict object; in that case, the mapping would be to
+                        # obj[<value_at_mapped_by_index>])
+                        'mapped_with': 'file:struct'
                     },
                     'subsegs': [
                         {

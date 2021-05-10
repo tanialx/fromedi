@@ -1,7 +1,7 @@
 from fromedi.parser import Parser
 
 
-def test_Parser():
+def test_x12_810_0():
     parser = Parser()
     interchange = parser.fromFile('./tests/data/x12_810_0.edi')
 
