@@ -11,16 +11,24 @@ class SegmentType(Enum):
 
     # REGULAR:  Requires no special processing (all segments except LOOP and CLOSING)
     # LOOP:     Repeated segments that may included child segments
-    # CLOSING:  Signal end of current segment (no more child),
-    #           ex: SE signals end of transaction data (which starts with ST)
     # KV_PAIR:  Segment contains two elements, but one is the value of the other
     #           ex: REF*BM*00000000 should be translate directly as 'bill_of_lading': '00000000'
     #               instead of {'ref_id_qualifier': 'BM, 'ref_id': '00000000'}
+    # ENVELOPE_OPENING:  
+    #           Repeated segments that may included child segments. This type is similar to LOOP
+    #           except that the the sub-segments are wrapped with opening and closing segments;
+    #           whereas in LOOP, the first segment of LOOP we encounter is the Loop's sub-segment
+    #           ex: - WRAP: ST (BIG REF) SE
+    #               - LOOP: (N1 N2 N3 N4)
+    # ENVELOPE_CLOSING: 
+    #           Signal end of current segment (no more child) which previously starts with ENVELOPE_OPENING,
+    #           ex: SE signals end of transaction data (which starts with ST)
 
     REGULAR = 1
     LOOP = 2
-    CLOSING = 3
-    KV_PAIR = 4
+    KV_PAIR = 3
+    ENVELOPE_OPENING = 4
+    ENVELOPE_CLOSING = 5
 
 
 class Defs:
@@ -59,36 +67,38 @@ class Defs:
     tranx = {
         # ASC X12 810: Invoice
         '810': {
-            'subsegs': {
-                'BIG': {},
-                'REF': {
-                    'segtype': SegmentType.KV_PAIR,
-                    'key_idx': 1
-                },
-                'N1': {
-                    'segtype': SegmentType.LOOP,
-                    'subsegs': {
-                        'N1': {},
-                        'N2': {},
-                        'N3': {},
-                        'N4': {}
-                    }
-                },
-                'ITD': {},
-                'IT1': {
-                    'segtype': SegmentType.LOOP,
-                    'subsegs': {
-                        'IT1': {}
-                    }
-                },
-                'TDS': {},
-                'CAD': {},
-                'CTT': {}
-            }
+            'subsegs': [{
+                'segname': 'BIG'
+            }, {
+                'segname': 'REF',
+                'segtype': SegmentType.KV_PAIR,
+                'key_idx': 1
+            }, {
+                'segname': 'N1',
+                'segtype': SegmentType.LOOP,
+                'subsegs': [
+                    {'segname': 'N1'},
+                    {'segname': 'N2'},
+                    {'segname': 'N3'},
+                    {'segname': 'N4'}
+                ]
+            }, {
+                'segname': 'ITD'
+            }, {
+                'segname': 'IT1',
+                'segtype': SegmentType.LOOP,
+                'subsegs': []
+            }, {
+                'segname': 'TDS'
+            }, {
+                'segname': 'CAD'
+            }, {
+                'segname': 'CTT'
+            }]
         }
     }
 
-    rule = {
+    rule = [{
 
         # Layout of EDI envenlope
         # - segtype: for handling special segments such as envelope level or Loop
@@ -100,36 +110,34 @@ class Defs:
         #                 Ex: 'REF' has index 0 in REF*DP*099
         # Treat repeatable envolope segments (GS, ST) as LOOP for now
 
-        'ISA': {
-            'subsegs': {
-                'GS': {
-                    'segtype': SegmentType.LOOP,
-                    'subsegs': {
-                        'ST': {
-                            'segtype': SegmentType.LOOP,
-                            'subsegs_link': {
-                                # Example: ST*810*1004
-                                # 'mapped_by_index': 1 --> key value: 810
-                                # Subsegs of this segment are retrieve from
-                                # tranx['810']
-                                'mapped_by_index': 1,
-                                'mapped_with': tranx
-                            },
-                            'subsegs': {
-                                # TODO: more segment defs
-                                'SE': {
-                                    'segtype': SegmentType.CLOSING  # End of ST segment
-                                }
-                            }
-                        },
-                        'GE': {
-                            'segtype': SegmentType.CLOSING  # End of GS segment
+        'segname': 'ISA',
+        'subsegs': [{
+            'segname': 'GS',
+            'segtype': SegmentType.ENVELOPE_OPENING,
+            'subsegs': [{
+                    'segname': 'ST',
+                    'segtype': SegmentType.ENVELOPE_OPENING,
+                    'subsegs_link': {
+                        # Example: ST*810*1004
+                        # 'mapped_by_index': 1 --> key value: 810
+                        # Subsegs of this segment are retrieve from
+                        # tranx['810']
+                        'mapped_by_index': 1,
+                        'mapped_with': tranx
+                    },
+                    'subsegs': [
+                        {
+                            'segname': 'SE',
+                            'segtype': SegmentType.ENVELOPE_CLOSING,
                         }
-                    }
-                },
-                'IEA': {
-                    'segtype': SegmentType.CLOSING  # End of ISA segment
-                }
+                    ]
+                    }, {
+                'segname': 'GE',
+                'segtype': SegmentType.ENVELOPE_CLOSING,
             }
-        }
-    }
+            ]
+        }, {
+            'segname': 'IEA',
+            'segtype': SegmentType.ENVELOPE_CLOSING,
+        }]
+    }]
