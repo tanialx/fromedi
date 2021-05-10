@@ -33,7 +33,7 @@ class SegmentType(Enum):
 
 class Defs:
 
-    segmentDef = {
+    commonSegmentDef = {
 
         # Name for segment's elements corresponding to position in EDI segment
         # Ex.
@@ -50,7 +50,6 @@ class Defs:
                'date', 'time', 'control_number', 'responsible_agency_code',
                'version/release/identifier_code'],
         'ST': ['identifier_code', 'control_number'],
-        'BIG': ['invoice_date', 'invoice_number', 'order_date', 'order_number', 'release_number', 'transaction_type'],
         'N1': ['entity_id_code', 'name', 'id_code_qualifier', 'id_code'],
         'TDS': ['total_amount'],
         'SE': ['number_of_segments', 'transaction_control_number'],
@@ -64,12 +63,6 @@ class Defs:
         'ST': 'transactions'
     }
 
-    kvPairKey = {
-        'REF': {
-            'DP': 'department_number',
-            'IA': 'internal_vendor_number'
-        }
-    }
     rule = [{
 
         # Layout of EDI envenlope

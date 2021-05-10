@@ -1,7 +1,8 @@
 {
     "subsegs": [
         {
-            "segname": "BIG"
+            "segname": "BIG",
+            "element_names": [ "invoice_date", "invoice_number", "order_date", "order_number", "release_number", "transaction_type" ]
         },
         {
             "segname": "REF",

@@ -126,7 +126,7 @@ class Parser:
             # Case 1.1: Regular segment
             if (segtype in [SegmentType.REGULAR, SegmentType.ENVELOPE_OPENING, SegmentType.LOOP]):
                 logging.debug('[%s] parsing regular segment', seg_name)
-                _parsed_seg = self.parse_regular_segment(seg_name, element_arr)
+                _parsed_seg = self.parse_regular_segment(seg_name, seg_rule, element_arr)
                 _out_pointer = self.outPointer()
 
                 # Segment of type Loop should be handled as List within the parent segment
@@ -176,16 +176,22 @@ class Parser:
 
             return True
 
-    def parse_regular_segment(self, segment_name, element_arr):
-        # Mapping elements of input segment and Defs.segmentDef
+    def parse_regular_segment(self, segment_name, seg_rule, element_arr):
+        # Mapping elements of input segment and Defs.commonSegmentDef
         # one-by-one to retrieve the names of the EDI segment element values
         counter = 1
         element_arr_len = len(element_arr)
         _seg_out = {}
-        if segment_name in Defs.segmentDef:
-            template = Defs.segmentDef[segment_name]
-            for template_element in template:
-                _seg_out[template_element] = element_arr[counter]
+
+        element_names = []
+        if 'element_names' in seg_rule:
+            element_names = seg_rule['element_names']
+        elif segment_name in Defs.commonSegmentDef:
+            element_names = Defs.commonSegmentDef[segment_name]
+
+        if len(element_names) > 0:
+            for element_name in element_names:
+                _seg_out[element_name] = element_arr[counter]
                 counter = counter + 1
                 if (element_arr_len <= counter):
                     break
@@ -210,9 +216,11 @@ class Parser:
             element_arr.remove(element_arr[0])
             value = element_arr[0]
 
+            kvPairKey = Parser.readExternalDefs('fromedi/literal/{}_{}.json'.format(segname, key_idx))
+
             # try to get literal name of key code if exists
-            if (segname in Defs.kvPairKey and key in Defs.kvPairKey[segname]):
-                key = Defs.kvPairKey[segname][key]
+            if (key in kvPairKey):
+                key = kvPairKey[key]
 
             return {
                 key: value
