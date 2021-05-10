@@ -1,5 +1,8 @@
 # fromedi (From EDI)
 
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache&#8208;2.0-green.svg?style=flat-square)](LICENSE.md)
+![Stability-wip](https://img.shields.io/badge/Stability-WIP-yellow.svg?style=flat-square)
+
 Just jotted down some idea for a EDI-to-human-language translator.
 
 ### Goal
