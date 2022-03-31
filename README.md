@@ -22,18 +22,37 @@ to
 }
 ```
 
-### Project layout
+### Development
 
-#### fromedi
+#### Project setup
+
+This project uses [pipenv](https://pypi.org/project/pipenv/) as Python package manager, please refer to the link for how to install pipenv on your machine. After that,
+
+Install dependencies
+
+```
+pipenv install --dev
+```
+
+Run tests
+
+```
+pipenv run python -m pytest
+```
+
+#### Source layout
+
+##### fromedi
 - `defs.py` defines EDI structure and necessary information for parsing
 - `parser.py` defines parsing logic
 - `literal/*.json` mapping EDI keycode to human-language text
 - `struct/*.json` structure of EDI segments/sub-segments (similar to `rule` object in `defs.py`). Path: `struct/<segment_name>/<mapping_key>.json`
 
-#### tests
+##### tests
 
 - `data/*.edi` EDI files used for testing
 - `test_parser.py` test cases
 
 ### Refs
+
 - [What is EDI?](https://www.ibm.com/topics/edi-electronic-data-interchange)
